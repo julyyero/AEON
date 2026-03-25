@@ -73,7 +73,6 @@ export default function App() {
   
   const [balances, setBalances] = useState({ sttDetails: "0.00", debt: "0.00", hf: "Max", sttWallet: "0.00", pusdWallet: "0.00" });
   const [currentPrice, setCurrentPrice] = useState("2500");
-  const [marketRisk, setMarketRisk] = useState("Safe");
   
   // Market Stats
   const [totalLiquidity, setTotalLiquidity] = useState("0");
@@ -173,10 +172,7 @@ export default function App() {
       });
       setCurrentPrice(parseFloat(formatUnits(price, 18)).toFixed(2));
 
-      const hfNum = parseFloat(hfVal);
-      if (hfNum < 1.0) setMarketRisk("Liquidated");
-      else if (hfNum <= 1.5) setMarketRisk("High Risk");
-      else setMarketRisk("Safe");
+
 
     } catch (e) {
       console.error(e);
@@ -219,19 +215,13 @@ export default function App() {
     } catch(e) {}
   };
 
-  let gaugeColor = "bg-green-500";
-  let hfTextClass = "text-green-600";
   let hfPercentage = 100;
   
   if (balances.hf !== "Max") {
     const num = parseFloat(balances.hf);
     if (num < 1.1) {
-      gaugeColor = "bg-red-500";
-      hfTextClass = "text-red-600";
       hfPercentage = Math.max(10, (num / 2) * 100);
     } else if (num <= 1.5) {
-      gaugeColor = "bg-orange-400";
-      hfTextClass = "text-orange-500";
       hfPercentage = Math.min(75, (num / 2) * 100);
     } else {
       hfPercentage = Math.min(100, (num / 3) * 100);
