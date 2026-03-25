@@ -61,7 +61,7 @@ export function useSomniaSentinel() {
               type,
               type === 'DEPLOY' ? `Contract Deploy at block ${blockNum}` : 
               type === 'CALL' ? `Contract Call → ${tx.to?.slice(0,10)}...` :
-              type === 'WHALE' ? `🐋 ${val.toFixed(2)} STT Whale Transfer` :
+              type === 'WHALE' ? `[WHALE] ${val.toFixed(2)} STT Transfer` :
               `${val.toFixed(2)} STT Transfer`,
               tx.hash
             ]);

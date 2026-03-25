@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, formatEther, formatUnits, parseEther, parseUnits } from 'ethers';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 // @ts-ignore
 import { useSomniaSentinel } from './hooks/useSomniaSentinel';
 
@@ -34,12 +34,7 @@ const TOKEN_ABI = [
 
 export default function App() {
   const [account, setAccount] = useState<string>('');
-  
-  // Parallax / Evaporation Scroll
-  const { scrollY } = useScroll();
-  const heroOpacity = useTransform(scrollY, [0, 600], [1, 0]);
-  const heroScale = useTransform(scrollY, [0, 600], [1, 0.95]);
-  const heroY = useTransform(scrollY, [0, 600], [0, 200]);
+  const [expandedBlock, setExpandedBlock] = useState(false);
   
   // === OMNISCIENCE OBSERVATORY DATA ===
   const omni = useSomniaSentinel();
@@ -126,19 +121,19 @@ export default function App() {
       addLog(`[SENTINEL API] Alert detected for ${user.substring(0,6)}... Critical HF: ${formattedHF}. Generating mitigation path...`, "warning");
       
       setTimeout(() => {
-        addLog(`🧠 [AI] : "Volatility threatens your position (HF: ${formattedHF}). Add Collateral immediately or Repay Debt."`, "ai");
+        addLog(`[AI] : "Volatility threatens your position (HF: ${formattedHF}). Add Collateral immediately or Repay Debt."`, "ai");
       }, 1000);
     });
 
     lContract.on("Liquidated", (user) => {
-      addLog(`💥 [HOT WALLET] Liquidation Executed for ${user.substring(0,6)}... Protocol Secured.`, "danger");
+      addLog(`[HOT WALLET] Liquidation Executed for ${user.substring(0,6)}... Protocol Secured.`, "danger");
       refreshData(lContract, oContract, accounts[0], signer);
     });
 
     oContract.on("PriceUpdated", (newPrice) => {
       const formattedPrice = formatUnits(newPrice, 18);
       setCurrentPrice(parseFloat(formattedPrice).toFixed(2));
-      addLog(`📉 [ORACLE] Flash Crash Detected! 1 STT = $${formattedPrice}`, "info");
+      addLog(`[ORACLE] Flash Crash Detected! 1 STT = $${formattedPrice}`, "info");
       refreshData(lContract, oContract, accounts[0], signer);
     });
 
@@ -199,9 +194,9 @@ export default function App() {
       } else if (action === 'repay') {
         tx = await lendingContract.repay(parseUnits(repayAmount, 18), { gasLimit: 500000 });
       }
-      addLog(`⏳ Broadcasting Transaction: ${action.toUpperCase()}...`, "info");
+      addLog(`Broadcasting Transaction: ${action.toUpperCase()}...`, "info");
       await tx.wait();
-      addLog(`✅ Transaction Confirmed: ${action.toUpperCase()}`, "success");
+      addLog(`Transaction Confirmed: ${action.toUpperCase()}`, "success");
       
       if (action==='deposit') setDepositAmount("");
       if (action==='borrow') setBorrowAmount("");
@@ -210,7 +205,7 @@ export default function App() {
       const signer = await provider!.getSigner();
       refreshData(lendingContract, oracleContract!, account, signer);
     } catch (error: any) {
-      addLog(`❌ Error: ${error.message || "Transaction Rejected"}`, "danger");
+      addLog(`Error: ${error.message || "Transaction Rejected"}`, "danger");
     }
   };
 
@@ -218,7 +213,7 @@ export default function App() {
     if(!oracleContract) return;
     try {
       const newP = "1100";
-      addLog("⚡ [TESTNET SIMULATION] Injecting Flash Crash to Oracle... ($1100)", "danger");
+      addLog("[TESTNET SIMULATION] Injecting Flash Crash to Oracle... ($1100)", "danger");
       const tx = await oracleContract.setPrice(parseUnits(newP, 18));
       await tx.wait();
     } catch(e) {}
@@ -259,95 +254,73 @@ export default function App() {
       </div>
 
       {/* ========================================= */}
-      {/* HERO SCREEN (S'évapore au scroll)  */}
-      {/* ========================================= */}
-      <motion.section 
-        style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
-        className="relative w-screen h-screen flex flex-col items-center justify-center shrink-0 z-10"
-      >
-        <div className="absolute inset-y-0 left-0 flex justify-start items-center opacity-30 pointer-events-none z-0">
-          <img src="/poteaux_grecque.png" alt="" className="w-auto h-[120vh] max-w-none -translate-x-[5vh]" style={{ mixBlendMode: 'multiply', filter: 'brightness(1.15) contrast(1.1)', maskImage: 'linear-gradient(to right, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 50%, transparent 100%)' }} />
-        </div>
-
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-white/40 rounded-full blur-[100px] pointer-events-none z-0"></div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-          className="z-20 flex flex-col items-center gap-3"
-        >
-          <h1 
-            className="tracking-[0.25em] text-[#A67E24] font-light text-8xl md:text-[10rem]"
-            style={{ textShadow: "0px 10px 30px rgba(166, 126, 36, 0.15)", fontFamily: "'Cinzel', serif" }}
-          >
-            AEON
-          </h1>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 2, delay: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
-        >
-          <p className="text-[10px] text-[#A67E24] tracking-[0.3em] uppercase font-bold">Scroll Down</p>
-          <div className="w-[1px] h-12 bg-gradient-to-b from-[#C19B4B]/60 to-transparent animate-pulse"></div>
-        </motion.div>
-      </motion.section>
 
       {/* ========================================= */}
-      {/* DASHBOARD (Section Contenu)  */}
+      {/* SIDEBAR NAVIGATION - FIXED OPAQUE */}
       {/* ========================================= */}
-      <section className="relative w-screen min-h-screen flex z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.05)] border-t border-[#C19B4B]/20">
-        
-        {/* TITRE AEON MINIMALISTE AU TOP */}
-        <div className="absolute top-10 left-12 z-[60] pointer-events-none">
-          <h1 
-            className="tracking-[0.25em] text-[#A67E24] font-light text-2xl"
-            style={{ fontFamily: "'Cinzel', serif" }}
-          >
-            AEON
-          </h1>
-        </div>
-          
-          {/* SIDEBAR NAVIGATION - OPAQUE */}
-          <aside className="w-[280px] min-h-screen flex flex-col pt-32 pb-10 px-8 z-40 relative group/sidebar border-r border-[#C19B4B]/20 bg-[#FDFCF8] shadow-[20px_0_50px_rgba(0,0,0,0.02)]">
+      <aside className="fixed top-0 left-0 w-[280px] h-screen flex flex-col pt-32 pb-10 px-8 z-50 group/sidebar border-r border-[#C19B4B]/20 bg-[#FDFCF8] shadow-[20px_0_50px_rgba(0,0,0,0.02)]">
+         {/* TITRE AEON MINIMALISTE AU TOP AVEC LOGO GEOMETRIQUE */}
+         <div className="absolute top-10 left-12 z-[60] pointer-events-none flex items-center">
+           <svg className="w-[1.6rem] h-[1.6rem] text-[#A67E24] mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square" strokeLinejoin="miter">
+             <circle cx="12" cy="12" r="10" />
+             <circle cx="12" cy="12" r="7.5" strokeWidth="0.5" />
              
-             <nav className="flex flex-col flex-1 mt-8 sticky top-32">
+             <path d="M8 7H16" />
+             <path d="M7 9H17" />
+             
+             <path d="M9 9V15" />
+             <path d="M12 9V15" />
+             <path d="M15 9V15" />
+             
+             <path d="M7 15H17" />
+             <path d="M8 17H16" />
+           </svg>
+           <h1 
+             className="tracking-[0.25em] text-[#A67E24] font-light text-2xl mt-0.5"
+             style={{ fontFamily: "'Cinzel', serif" }}
+           >
+             AEON
+           </h1>
+         </div>
+
+         <nav className="flex flex-col flex-1 mt-8">
                 {[
                   { id: 'vault', label: 'Vault' },
-                  { id: 'sentinel', label: 'Monitor' },
                   { id: 'observatory', label: 'Observatory' },
-                  { id: 'docs', label: 'Docs' },
-                  { id: 'team', label: 'Team' }
+                  { id: 'sentinel', label: 'Monitor' },
+                  { id: 'docs', label: 'Docs' }
                 ].map((tab, idx) => (
-                  <div key={tab.id} className={`${idx !== 0 ? 'mt-3' : ''}`}>
+                  <div key={tab.id} className={`${idx !== 0 ? 'mt-6' : ''}`}>
                     <button 
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => { setActiveTab(tab.id); window.scrollTo(0,0); }}
                       className={`w-full text-left group flex items-center transition-all duration-300 ease-out py-4 px-4 rounded shadow-sm border
                         ${activeTab === tab.id 
                           ? 'bg-white text-[#A67E24] border-[#C19B4B]/30 translate-x-3 shadow-md' 
                           : 'bg-white/40 text-[#8F7744] border-transparent hover:bg-white hover:text-[#A67E24] hover:shadow hover:border-[#C19B4B]/20'
                         }`}
                     >
-                      <span className="uppercase tracking-[0.2em] text-[10px] font-bold origin-left inline-block">{tab.label}</span>
+                      <span className="uppercase tracking-[0.2em] text-xs font-bold origin-left inline-block">{tab.label}</span>
                     </button>
                   </div>
                 ))}
-             </nav>
-          </aside>
+         </nav>
+      </aside>
 
-          {/* MAIN CONTENT AREA */}
-          <main className="flex-1 w-full px-8 lg:px-12 py-32 relative z-30">
+      {/* ========================================= */}
+      {/* DASHBOARD (Section Contenu)  */}
+      {/* ========================================= */}
+      <section className="relative w-full min-h-screen flex z-20">
+        
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 w-full ml-[280px] px-8 lg:px-12 py-32 relative z-30">
             {/* CONNECT WALLET BUTTON - TOP RIGHT */}
-            <div className="absolute top-8 right-10 z-50">
+            <div className="fixed top-8 right-10 z-[70]">
               <button 
                 onClick={connectWallet}
-                className={`text-xs font-sans font-light tracking-[0.2em] transition-all duration-500 uppercase ${
+                className={`text-sm font-sans font-bold tracking-[0.25em] transition-all duration-500 uppercase origin-right ${
                   account 
-                    ? 'text-[#A67E24]/70 hover:text-[#A67E24]' 
-                    : 'text-[#A67E24] hover:tracking-[0.3em]'
+                    ? 'text-[#A67E24]/80 hover:text-[#A67E24]' 
+                    : 'text-[#A67E24] hover:text-[#8F7744] hover:scale-105'
                 }`}
               >
                 {account ? `✦ ${account.substring(0,6)}..${account.slice(-4)}` : 'Connect Wallet'}
@@ -368,29 +341,31 @@ export default function App() {
                       {/* POSITION OVERVIEW */}
                       <div className="lg:col-span-8 flex flex-col justify-between py-6">
                         <div className="mb-10">
-                          <h3 className="text-sm tracking-[0.2em] font-sans font-bold text-[#A67E24] uppercase border-b border-black/15 pb-4 inline-block pr-12">
+                          <h3 className="text-base tracking-[0.2em] font-sans font-bold text-[#A67E24] uppercase border-b border-black/15 pb-4 inline-block pr-12">
                              Position Overview
                           </h3>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                           <div className="overflow-hidden">
-                            <p className="text-black/50 text-[10px] uppercase tracking-widest font-bold mb-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-black/40 block"></span> Your Collateral (STT)</p>
-                            <h2 className="text-3xl lg:text-4xl font-sans font-bold tracking-tighter text-black truncate">{balances.sttDetails}</h2>
-                            <p className="text-black/40 text-xs mt-2 uppercase tracking-wide">Wallet: <span className="text-black font-semibold">{balances.sttWallet}</span></p>
+                            <p className="text-black/50 text-[11px] uppercase tracking-widest font-bold mb-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-black/40 block"></span> Your Collateral (STT)</p>
+                            <h2 className="text-4xl lg:text-5xl font-sans font-bold tracking-tighter text-black truncate">{balances.sttDetails}</h2>
+                            <p className="text-black/40 text-sm mt-2 uppercase tracking-wide">Wallet: <span className="text-black font-semibold">{balances.sttWallet}</span></p>
                           </div>
+                          
                           <div className="overflow-hidden">
-                            <p className="text-black/50 text-[10px] uppercase tracking-widest font-bold mb-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-black/30 block"></span> Your Debt (aeonUSDC)</p>
-                            <h2 className="text-3xl lg:text-4xl font-sans font-bold tracking-tighter text-black truncate">{balances.debt}</h2>
-                            <p className="text-black/40 text-xs mt-2 uppercase tracking-wide">Wallet: <span className="text-black font-semibold">{balances.pusdWallet}</span></p>
+                            <p className="text-black/50 text-[11px] uppercase tracking-widest font-bold mb-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-500/80 block"></span> Your Debt (aeonUSDC)</p>
+                            <h2 className="text-4xl lg:text-5xl font-sans font-bold tracking-tighter text-black truncate">{balances.debt}</h2>
+                            <p className="text-black/40 text-sm mt-2 uppercase tracking-wide">Wallet: <span className="text-black font-semibold">{balances.pusdWallet}</span></p>
                           </div>
                         </div>
                       </div>
 
-                      {/* HEALTH FACTOR */}
+                      {/* HEALTH FACTOR - Only shown when wallet is connected */}
+                      {account && (
                       <div className="lg:col-span-4 flex flex-col justify-center pl-4 pr-8 pt-16 relative">
                         <p className="text-black/50 text-[10px] font-bold tracking-[0.2em] uppercase mb-2">Health Factor</p>
 
-                        <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-4 text-black" style={{ fontFamily: "'Cinzel', serif" }}>
+                        <h2 className="text-4xl lg:text-5xl font-sans font-bold tracking-tighter mb-4 text-black truncate">
                           {balances.hf}
                         </h2>
 
@@ -416,6 +391,7 @@ export default function App() {
 
                         <p className="text-[11px] text-black/40 leading-relaxed">If below 1.0, Sentinel will liquidate your STT collateral to secure the protocol. Keep it above 1.5 for safety.</p>
                       </div>
+                      )}
 
                       {/* VAULT ACTIONS */}
                       <div className="lg:col-span-12 mt-6 pt-6">
@@ -483,11 +459,8 @@ export default function App() {
                         <div className="md:col-span-7 flex flex-col min-h-[400px] border-l border-black/10 pl-8 relative">
                           <div className="mb-8 flex items-center justify-between">
                             <h3 className="font-sans font-bold tracking-[0.2em] text-[#A67E24] text-sm uppercase">
-                              Sentinel Live Feed
+                              Your Transactions
                             </h3>
-                            <span className="text-[9px] px-3 py-1.5 bg-black/5 text-black/60 font-bold border border-black/10 uppercase tracking-[0.2em] rounded flex items-center gap-2">
-                               <span className="w-1.5 h-1.5 rounded-full bg-green-500 block"></span> Active
-                            </span>
                           </div>
                           <div className="flex-1 overflow-y-auto text-sm flex flex-col gap-4 max-h-[500px] pr-4">
                             {aiLogs.length === 0 ? (
@@ -573,40 +546,13 @@ export default function App() {
                         ))}
                       </div>
 
-                      {/* SECTION III */}
-                      <div className="mb-12">
-                        <p className="text-[10px] tracking-[0.2em] uppercase text-black/50 font-bold mb-6">III. Roadmap</p>
-                        <div className="border-l-2 border-black/10 pl-6 space-y-3">
-                          {['Decentralize Price Oracles (Pyth/Chainlink)', 'Deploy decentralized Sentinel Keepers', 'Implement indexed data API (TheGraph/Goldsky)'].map((step, i) => (
-                            <p key={i} className="text-sm text-black/50 flex items-start gap-2">
-                              <span className="text-black font-bold">{i + 1}.</span> {step}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
+
 
                     </div>
                   )}
 
-                  {/* ONGLET 5 : MEET THE TEAM */}
-                  {activeTab === 'team' && (
-                    <div className="animate-fade-in-up border-none min-h-[400px]">
-                      <h3 className="text-sm tracking-[0.2em] font-sans font-bold text-[#A67E24] uppercase mb-12">The Architects</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-[600px]">
-                        {[1,2,3].map((i) => (
-                          <div key={i} className="flex flex-col group cursor-pointer border-l-2 border-black/10 hover:border-black/30 pl-6 transition-all duration-300">
-                            <div className="w-20 h-20 rounded-full bg-white/40 border border-black/10 mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-500 shadow-sm">
-                              <span className="text-3xl text-black font-sans font-bold tracking-tighter">{i}</span>
-                            </div>
-                            <h4 className="font-sans font-bold tracking-[0.1em] text-black text-lg mb-1">Architect #{i}</h4>
-                            <p className="text-[10px] uppercase tracking-widest text-black/40 font-bold">AI & DeFi Engine</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ONGLET 6 : OMNISCIENCE OBSERVATORY */}
+                  {/* ========================================= */}
+                  {/* ONGLET 5 : OMNISCIENCE OBSERVATORY */}
                   {activeTab === 'observatory' && (
                     <div className="animate-fade-in-up border-none min-h-[400px]">
                       <style>{`
@@ -656,8 +602,9 @@ export default function App() {
                         <div>
                           <p className="text-black/50 text-[10px] tracking-widest uppercase font-bold mb-2">Block</p>
                           <h2 
-                            className="text-2xl lg:text-3xl font-sans font-bold tracking-tighter text-black truncate cursor-help"
-                            title={omni.blockData?.number ? `Block #${omni.blockData.number}` : 'Awaiting block...'}
+                            className={`text-2xl lg:text-3xl font-sans font-bold tracking-tighter text-black cursor-pointer transition-all duration-300 select-none ${expandedBlock ? 'break-words' : 'truncate'}`}
+                            title="Click to expand full block number"
+                            onClick={() => setExpandedBlock(!expandedBlock)}
                           >
                             #{omni.blockData?.number || '---'}
                           </h2>
@@ -672,8 +619,7 @@ export default function App() {
                         </div>
                         <div>
                           <p className="text-black/50 text-[10px] tracking-widest uppercase font-bold mb-2">Status</p>
-                          <h2 className="text-2xl lg:text-3xl font-sans font-bold tracking-tighter text-black flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 blink-dot"></span>
+                          <h2 className="text-2xl lg:text-3xl font-sans font-bold tracking-tighter text-black">
                             Live
                           </h2>
                         </div>
