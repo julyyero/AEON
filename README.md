@@ -46,9 +46,6 @@ A transparent, direct feed into the Somnia Network's mempool and block productio
 3. Start the development server:
     npm run dev
 
-4. Connect your Wallet:
-   Local builds launch on http://localhost:5173. Connect your Web3 provider (such as MetaMask) connected to the Somnia Testnet to interact directly with the smart contracts.
-
 **Testnet Contract Deployments**
 
 The following contracts structure the AEON testnet instance. The exact ABIs are tightly integrated within the repository for operational context:
