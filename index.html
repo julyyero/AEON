@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aeon Protocol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.addEventListener('error', (event) => {
+        const errDiv = document.createElement('div');
+        errDiv.style = "position:absolute; top:0; left:0; width:100%; padding:20px; background:red; color:white; font-size:18px; z-index:99999;";
+        errDiv.innerText = "CRASH LOG: " + event.message + "\n\n" + (event.error ? event.error.stack : '');
+        document.body.appendChild(errDiv);
+      });
+    </script>
+  </body>
+</html>
